@@ -1,0 +1,39 @@
+# Dependency directories
+node_modules/
+.pnpm-store/
+
+# Next.js build and cache
+.next/
+out/
+
+# Production build outputs
+dist/
+build/
+
+# Turborepo cache
+.turbo/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.development.local
+.env.production.local
+.env.test.local
+
+# IDE configurations
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store

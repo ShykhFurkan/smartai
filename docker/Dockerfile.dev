@@ -1,0 +1,31 @@
+FROM node:20-alpine
+
+# Set pnpm home and path
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+WORKDIR /app
+
+# Copy root configuration files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml turbo.json ./
+
+# Copy package configurations for dependency resolution
+COPY packages/config/package.json ./packages/config/package.json
+COPY packages/ui/package.json ./packages/ui/package.json
+COPY packages/utils/package.json ./packages/utils/package.json
+COPY packages/logger/package.json ./packages/logger/package.json
+COPY packages/types/package.json ./packages/types/package.json
+COPY apps/web/package.json ./apps/web/package.json
+
+# Install dependencies across all workspace packages
+RUN pnpm install
+
+# Copy workspace source files
+COPY . .
+
+# Expose Next.js default port
+EXPOSE 3000
+
+# Start Next.js web application dev server
+CMD ["pnpm", "--filter", "web", "dev"]
