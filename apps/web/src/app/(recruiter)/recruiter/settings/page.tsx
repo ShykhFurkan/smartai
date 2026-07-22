@@ -69,7 +69,10 @@ export default function SettingsPage() {
           try {
             const fn = new Function(`return ${trimmed};`);
             return fn();
-          } catch {}
+          } catch (e) {
+            logger.debug("looseParseJSON failed", e);
+            return null;
+          }
         }
       }
     }

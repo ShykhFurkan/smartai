@@ -195,8 +195,7 @@ export default function CandidateExamPortalPage() {
       logger.info("[ExamPortal] Timer expired. Auto-submitting exam attempt...");
       handleSubmitExam();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [secondsRemaining]);
+  }, [secondsRemaining, attemptId, completedAttempt, submitting]);
 
   // Save progress handler (optimistic & async save)
   const handleSelectOption = async (questionId: string, optionText: string) => {
