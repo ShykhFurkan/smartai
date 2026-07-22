@@ -123,6 +123,15 @@ export const resumeService = {
       throw new Error("Resume not found or access denied.");
     }
 
+    if (!resume.s3_key) {
+      logger.info(`Service: Resume ${resumeId} has no s3_key, falling back to file_url: ${resume.file_url}`);
+      return {
+        signedUrl: resume.file_url || "https://placeholder-storage.co/resumes/" + resume.file_name,
+        fileName: resume.file_name,
+        mimeType: resume.mime_type,
+      };
+    }
+
     const supabase = await createCandClient();
 
     // Create secure signed url link (valid for 15 minutes / 900 seconds)

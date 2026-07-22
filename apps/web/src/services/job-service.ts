@@ -57,12 +57,6 @@ export const jobService = {
    */
   publishJob: async (jobId: string) => {
     logger.info(`Service: Publishing job: ${jobId}`);
-
-    const existing = await jobRepository.getJobById(jobId);
-    if (!existing) {
-      throw new Error("Job posting not found");
-    }
-
     return await jobRepository.updateJobStatus(jobId, "published");
   },
 
@@ -71,12 +65,6 @@ export const jobService = {
    */
   archiveJob: async (jobId: string) => {
     logger.info(`Service: Archiving job: ${jobId}`);
-
-    const existing = await jobRepository.getJobById(jobId);
-    if (!existing) {
-      throw new Error("Job posting not found");
-    }
-
     return await jobRepository.updateJobStatus(jobId, "closed");
   },
 

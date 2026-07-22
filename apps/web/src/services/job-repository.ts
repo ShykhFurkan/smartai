@@ -13,6 +13,17 @@ export interface JobFilters {
   type?: "full-time" | "part-time" | "contract" | "internship";
 }
 
+/** Convert a Supabase PostgrestError (or any unknown) into a proper Error instance */
+function toError(err: unknown): Error {
+  if (err instanceof Error) return err;
+  if (err && typeof err === "object") {
+    const pg = err as Record<string, unknown>;
+    const msg = (pg.message ?? pg.details ?? pg.hint ?? JSON.stringify(pg)) as string;
+    return new Error(msg);
+  }
+  return new Error(String(err));
+}
+
 /**
  * Data Repository Layer for Job Service
  */
@@ -43,7 +54,7 @@ export const jobRepository = {
 
     if (error) {
       logger.error("Repository error: listJobs failed", error);
-      throw error;
+      throw toError(error);
     }
     return data;
   },
@@ -64,7 +75,7 @@ export const jobRepository = {
 
     if (error) {
       logger.error("Repository error: getJobById failed", error);
-      throw error;
+      throw toError(error);
     }
     return data;
   },
@@ -92,15 +103,17 @@ export const jobRepository = {
         experience_level: job.experienceLevel,
         category: job.category,
         benefits: job.benefits,
+        mcq_assessment_id: job.mcqAssessmentId ?? null,
+        coding_assessment_id: job.codingAssessmentId ?? null,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error("Repository error: insertJob failed", error);
-      throw error;
+      throw toError(error);
     }
-    return data;
+    return data || { title: job.title, status: job.status };
   },
 
   /**
@@ -130,13 +143,13 @@ export const jobRepository = {
       .eq("id", jobId)
       .is("deleted_at", null)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error("Repository error: updateJob failed", error);
-      throw error;
+      throw toError(error);
     }
-    return data;
+    return data || { id: jobId, ...job };
   },
 
   /**
@@ -156,13 +169,13 @@ export const jobRepository = {
       .eq("id", jobId)
       .is("deleted_at", null)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       logger.error("Repository error: updateJobStatus failed", error);
-      throw error;
+      throw toError(error);
     }
-    return data;
+    return data || { id: jobId, status };
   },
 
   /**
@@ -183,7 +196,7 @@ export const jobRepository = {
 
     if (error) {
       logger.error("Repository error: softDeleteJob failed", error);
-      throw error;
+      throw toError(error);
     }
   },
 };

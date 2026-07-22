@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createJobClient } from "@/utils/supabase/job";
+import { createClient } from "@/utils/supabase/server";
 import { jobService } from "@/services/job-service";
 import { logger } from "@smarthire/logger";
 
@@ -34,13 +34,13 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
   try {
     const { id: jobId } = await params;
-    const supabase = await createJobClient();
 
-    // Authenticate user session
+    // Auth must use default-schema client; custom-schema clients bypass auth
+    const authClient = await createClient();
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await authClient.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
@@ -64,13 +64,13 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 export async function DELETE(_request: NextRequest, { params }: RouteContext) {
   try {
     const { id: jobId } = await params;
-    const supabase = await createJobClient();
 
-    // Authenticate user session
+    // Auth must use default-schema client; custom-schema clients bypass auth
+    const authClient = await createClient();
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await authClient.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });

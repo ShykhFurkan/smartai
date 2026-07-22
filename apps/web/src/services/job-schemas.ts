@@ -18,6 +18,8 @@ export const jobCreateSchema = z
     experienceLevel: z.enum(["entry", "mid", "senior", "lead", "executive"]),
     category: z.string().max(100).optional().nullable(),
     benefits: z.array(z.string()).default([]),
+    mcqAssessmentId: z.string().uuid("Invalid MCQ assessment ID").optional().nullable(),
+    codingAssessmentId: z.string().uuid("Invalid coding assessment ID").optional().nullable(),
   })
   .refine(
     (data) => {
@@ -48,6 +50,8 @@ export const jobUpdateSchema = z
     experienceLevel: z.enum(["entry", "mid", "senior", "lead", "executive"]).optional(),
     category: z.string().max(100).optional().nullable(),
     benefits: z.array(z.string()).optional(),
+    mcqAssessmentId: z.string().uuid("Invalid MCQ assessment ID").optional().nullable(),
+    codingAssessmentId: z.string().uuid("Invalid coding assessment ID").optional().nullable(),
   })
   .refine(
     (data) => {

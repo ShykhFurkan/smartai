@@ -8,11 +8,11 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-950">
+    <div className="flex h-screen overflow-hidden bg-zinc-50">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-y-auto p-8 text-zinc-100">{children}</main>
+        <main className="flex-1 overflow-y-auto p-8 text-zinc-800">{children}</main>
       </div>
     </div>
   );

@@ -1,21 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   SMART HIRE — DESIGN SYSTEM FOUNDATION
+   Premium Enterprise SaaS · Light Mode Only
+   ============================================================ */
+
+/* ── Design Tokens ─────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Colors */
+  --sh-bg: #F5F5F7;
+  --sh-surface: #FFFFFF;
+  --sh-primary: #0071E3;
+  --sh-primary-hover: #0077ED;
+  --sh-primary-pressed: #006ACC;
+  --sh-text-primary: #1D1D1F;
+  --sh-text-secondary: #6E6E73;
+  --sh-text-tertiary: #AEAEB2;
+  --sh-border: #D2D2D7;
+  --sh-border-subtle: #E8E8ED;
+  --sh-hover: #F2F2F2;
+  --sh-success: #34C759;
+  --sh-warning: #FF9F0A;
+  --sh-danger: #FF3B30;
+
+  /* Spacing */
+  --sh-radius-sm: 8px;
+  --sh-radius-input: 12px;
+  --sh-radius-btn: 12px;
+  --sh-radius-card: 16px;
+  --sh-radius-dialog: 20px;
+
+  /* Shadows */
+  --sh-shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04);
+  --sh-shadow-md: 0 4px 12px 0 rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --sh-shadow-lg: 0 8px 24px 0 rgba(0,0,0,0.10), 0 4px 8px -2px rgba(0,0,0,0.06);
+
+  /* Typography */
+  --sh-font: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Base Reset ────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--sh-font);
+  color: var(--sh-text-primary);
+  background: var(--sh-bg);
+  font-feature-settings: "cv01", "cv02", "cv03", "cv04";
+  overflow-x: hidden;
+  line-height: 1.5;
 }
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--sh-border);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sh-text-tertiary);
+}
+
+/* ── Selection ─────────────────────────────────────────────── */
+::selection {
+  background: rgba(0, 113, 227, 0.15);
+  color: var(--sh-text-primary);
+}
+
+/* ── Focus Ring ────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--sh-primary);
+  outline-offset: 2px;
+}
+
+/* ── No Scrollbar Utility ──────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Smooth Animations ─────────────────────────────────────── */
+@keyframes sh-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes sh-slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes sh-scale-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes sh-skeleton {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.sh-animate-in   { animation: sh-fade-in 0.2s ease-out both; }
+.sh-slide-right  { animation: sh-slide-in-right 0.25s ease-out both; }
+.sh-scale-in     { animation: sh-scale-in 0.15s ease-out both; }
+
+/* ── Skeleton Loader ───────────────────────────────────────── */
+.sh-skeleton {
+  background: linear-gradient(90deg,
+    var(--sh-border-subtle) 25%,
+    var(--sh-hover) 37%,
+    var(--sh-border-subtle) 63%
+  );
+  background-size: 400% 100%;
+  animation: sh-skeleton 1.4s ease infinite;
+  border-radius: var(--sh-radius-sm);
+}
+
+/* ── Marketing Legacy Utilities ────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 0.3; }
+}
+.animate-pulse-glow { animation: pulse-glow 8s ease-in-out infinite; }

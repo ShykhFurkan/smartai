@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(
+  const client = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key",
     {
@@ -32,4 +32,9 @@ export async function createClient() {
       },
     }
   );
+
+  // Initialize and load auth session from cookies into client headers
+  await client.auth.getUser().catch(() => null);
+
+  return client;
 }

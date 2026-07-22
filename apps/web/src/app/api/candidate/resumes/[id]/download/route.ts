@@ -35,7 +35,7 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
     logger.info(`API: Generating download URL for resume: ${resumeId} for candidate: ${profile.id}`);
     const signedData = await resumeService.generateSignedDownloadUrl(profile.id, resumeId);
 
-    return NextResponse.json({ data: signedData });
+    return NextResponse.redirect(signedData.signedUrl);
   } catch (err: unknown) {
     logger.error("API error in resume download signed link GET route", err);
     const message = err instanceof Error ? err.message : String(err);

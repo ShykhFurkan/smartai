@@ -12,6 +12,17 @@ export const createCompanySchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Slug must be URL-friendly (lowercase, numbers, and dashes only)"),
   domain: z.string().max(255).optional().nullable(),
   logoUrl: z.string().url("Invalid logo URL format").max(512).optional().nullable(),
+  // Onboarding Fields
+  industry: z.string().max(100).optional().nullable(),
+  companySize: z.string().max(50).optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
+  email: z.string().email("Invalid email format").or(z.literal("")).optional().nullable(),
+  timezone: z.string().max(100).optional().nullable(),
+  description: z.string().optional().nullable(),
+  bannerUrl: z.string().url("Invalid banner URL format").max(512).optional().nullable(),
+  country: z.string().max(100).optional().nullable(),
+  state: z.string().max(100).optional().nullable(),
+  city: z.string().max(100).optional().nullable(),
 });
 
 /**
@@ -27,6 +38,17 @@ export const updateCompanySchema = z.object({
     .optional(),
   domain: z.string().max(255).optional().nullable(),
   logoUrl: z.string().url().max(512).optional().nullable(),
+  // Onboarding Fields
+  industry: z.string().max(100).optional().nullable(),
+  companySize: z.string().max(50).optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
+  email: z.string().email("Invalid email format").or(z.literal("")).optional().nullable(),
+  timezone: z.string().max(100).optional().nullable(),
+  description: z.string().optional().nullable(),
+  bannerUrl: z.string().url().max(512).optional().nullable(),
+  country: z.string().max(100).optional().nullable(),
+  state: z.string().max(100).optional().nullable(),
+  city: z.string().max(100).optional().nullable(),
   // Settings & Branding
   primaryColor: z
     .string()
@@ -62,5 +84,5 @@ export const updateDepartmentSchema = z.object({
 export const inviteRecruiterSchema = z.object({
   companyId: z.string().uuid("Invalid company ID format"),
   email: z.string().email("Invalid invitation email format"),
-  role: z.enum(["recruiter", "hiring_manager"]),
+  role: z.enum(["recruiter", "hiring_manager", "company-admin"]),
 });

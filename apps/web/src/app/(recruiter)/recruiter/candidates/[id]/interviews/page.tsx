@@ -1,0 +1,161 @@
+"use client";
+
+import * as React from "react";
+import { useParams } from "next/navigation";
+import { createBrowserClient } from "@supabase/ssr";
+import { Loader2, Calendar, Video, User } from "lucide-react";
+import { logger } from "@smarthire/logger";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key";
+
+// Supabase clients for schemas
+const appClient = createBrowserClient(supabaseUrl, supabaseKey, { db: { schema: "application" } });
+const intClient = createBrowserClient(supabaseUrl, supabaseKey, { db: { schema: "interview" } });
+
+interface InterviewDetails {
+  id: string;
+  interview_type: string;
+  status: string;
+  scheduled_at: string;
+  duration_minutes: number;
+  meeting_link?: string;
+  instructions?: string;
+}
+
+export default function CandidateInterviewsPage() {
+  const params = useParams();
+  const candidateId = params.id as string;
+
+  const [interviews, setInterviews] = React.useState<InterviewDetails[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchInterviews = async () => {
+      try {
+        // Query candidate's active application ID
+        const { data: app } = await appClient
+          .from("applications")
+          .select("id")
+          .eq("candidate_id", candidateId)
+          .is("deleted_at", null)
+          .maybeSingle();
+
+        if (app) {
+          // Query interviews matching application ID from interview schema
+          const { data, error } = await intClient
+            .from("interviews")
+            .select("id, interview_type, status, scheduled_at, duration_minutes, meeting_link, instructions")
+            .eq("application_id", app.id);
+
+          if (error) throw error;
+          setInterviews(data || []);
+        } else {
+          setInterviews([]);
+        }
+      } catch (err) {
+        logger.error("Failed to load candidate interviews", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInterviews();
+  }, [candidateId]);
+
+  const getStatusBadge = (status: string) => {
+    const styles: Record<string, string> = {
+      scheduled: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+      completed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+      cancelled: "bg-red-500/10 text-red-500 border-red-500/20",
+    };
+    const label = status.charAt(0).toUpperCase() + status.slice(1);
+    const styleClass = styles[status] || "bg-zinc-550/10 text-zinc-555 border-zinc-550/20";
+
+    return (
+      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${styleClass}`}>
+        {label}
+      </span>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        <Loader2 className="h-7 w-7 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-zinc-200/50 dark:border-zinc-800 bg-white dark:bg-[#09090c]/30 p-6 text-left animate-in fade-in duration-200">
+      <div className="flex justify-between items-center mb-6 border-b border-zinc-850 pb-3">
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-150 flex items-center gap-1.5">
+          <Calendar className="h-5 w-5 text-zinc-450" /> Scheduled interview loops
+        </h3>
+        <span className="text-xs text-zinc-555 font-mono">
+          Total Loops: {interviews.length}
+        </span>
+      </div>
+
+      {interviews.length === 0 ? (
+        <div className="text-center py-12 text-zinc-555 text-sm">
+          No recruiters panel or technical interviews scheduled yet.
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {interviews.map((int) => (
+            <div
+              key={int.id}
+              className="rounded-xl border border-zinc-200/50 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-950/40 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            >
+              {/* Left Details */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <h4 className="text-sm font-bold text-zinc-200 capitalize">
+                    {int.interview_type.replace("-", " ")} Round
+                  </h4>
+                  {getStatusBadge(int.status)}
+                </div>
+
+                <div className="flex items-center gap-3 text-xs text-zinc-500 font-medium">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3.5 w-3.5 shrink-0" />
+                    <span>{new Date(int.scheduled_at).toLocaleString()}</span>
+                  </div>
+                  <span>•</span>
+                  <span>{int.duration_minutes} min duration</span>
+                </div>
+
+                {int.instructions && (
+                  <p className="text-xs text-zinc-650 dark:text-zinc-400 max-w-md italic leading-normal">
+                    Instructions: &quot;{int.instructions}&quot;
+                  </p>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 shrink-0">
+                {int.meeting_link ? (
+                  <a
+                    href={int.meeting_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 bg-blue-600 text-white hover:bg-blue-500 rounded-lg px-4 py-2 text-xs font-semibold h-9 shadow-sm"
+                  >
+                    <Video className="h-4 w-4" /> Join Video Call
+                  </a>
+                ) : (
+                  <span className="text-zinc-555 text-xs italic">No Link Linked</span>
+                )}
+
+                <div className="h-9 w-9 rounded-lg bg-zinc-950 border border-zinc-900 flex items-center justify-center text-zinc-500" title="Assigned Interviewers">
+                  <User className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

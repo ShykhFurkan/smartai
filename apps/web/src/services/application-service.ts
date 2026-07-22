@@ -25,7 +25,7 @@ export const applicationService = {
   /**
    * Submit job application (Apply for Job)
    */
-  applyJob: async (payload: unknown) => {
+  applyJob: async (payload: unknown, userId?: string) => {
     logger.info("Service: applyJob initiated");
     const result = applyJobSchema.safeParse(payload);
 
@@ -37,13 +37,17 @@ export const applicationService = {
     const app = await applicationRepository.insertApplication(result.data);
 
     // Initial Status History log
-    await applicationRepository.insertStatusHistory({
-      applicationId: app.id,
-      fromStatus: "none",
-      toStatus: "applied",
-      notes: "Application submitted by candidate",
-      changedBy: app.candidate_id,
-    });
+    try {
+      await applicationRepository.insertStatusHistory({
+        applicationId: app.id,
+        fromStatus: "none",
+        toStatus: "applied",
+        notes: "Application submitted by candidate",
+        changedBy: userId || null,
+      });
+    } catch (histErr) {
+      logger.warn("Status history logging skipped", histErr);
+    }
 
     // Publish Event
     logger.info("[EVENT_BUS] Publish: ApplicationSubmitted", {

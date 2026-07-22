@@ -239,40 +239,51 @@ This registry documents the architecture, database ownership, asynchronous event
 
 ---
 
-### 5.7. Assessment Service
+### 5.7. Assessment Service (Fully Implemented)
+
+See [ASSESSMENT_SERVICE.md](file:///c:/Users/Furkan/Desktop/smart%20hire/docs/ASSESSMENT_SERVICE.md) for full endpoint and schema specs.
 
 - **Responsibilities**: Manage logic challenges and skill assessments, execute grading criteria, configure evaluation thresholds, and record applicant scores.
-- **Database Ownership**: `assessment_db` (PostgreSQL)
-  - Tables: `assessments`, `questions`, `assessment_attempts`, `scores`.
+- **Database Ownership**: `assessment` schema (PostgreSQL)
+  - Tables: `assessments`, `questions`, `assignments`, `attempts`.
 - **Events Published**:
   - `assessment.assigned` (attempt_id, application_id, candidate_id, assessment_id)
   - `assessment.completed` (attempt_id, application_id, score, passed)
 - **Events Consumed**:
   - `application.stage_changed` (auto-triggers assessment email invite on stage match)
 - **Public APIs**:
-  - `POST /api/v1/assessments` (Create coding/logic challenge template)
-  - `POST /api/v1/assessments/assign` (Send assessment link to applicant)
-  - `POST /api/v1/attempts/:attemptId/submit` (Record candidate answers)
-  - `GET /api/v1/attempts/:attemptId/results` (Fetch score card and feedback metrics)
+  - `POST /api/v1/assessment/templates` (Create template)
+  - `POST /api/v1/assessment/assignments` (Assign assessment to candidates)
+  - `POST /api/v1/assessment/attempts` (Start attempt)
+  - `POST /api/v1/assessment/attempts/:attemptId/submit` (Submit candidate answers)
+  - `GET /api/v1/assessment/attempts/:attemptId` (Fetch scorecard results)
 - **Dependencies**: Application Service.
 
 ---
 
-### 5.8. Interview Service
+### 5.8. Interview Service (Fully Implemented)
 
-- **Responsibilities**: Coordinate recruiter/candidate availability, sync calendars (Google Workspace & Outlook), generate video meet links (Zoom, Teams, Meet), and aggregate hiring feedback.
-- **Database Ownership**: `interview_db` (PostgreSQL)
-  - Tables: `interviews_slots`, `interviewer_availabilities`, `feedback_forms`, `scorecards`.
+See [INTERVIEW_SERVICE.md](file:///c:/Users/Furkan/Desktop/smart%20hire/docs/INTERVIEW_SERVICE.md) for full endpoint and schema specs.
+
+- **Responsibilities**: Coordinate recruiter/candidate availability, manage scheduling lifecycles (stages and rounds), generate mock meeting provider links (Google Meet, Zoom, Teams), and record interviewer scorecard evaluations.
+- **Database Ownership**: `interview` schema (PostgreSQL)
+  - Tables: `interviews`, `availability_slots`, `interviewers`, `scorecards`, `interview_events`.
 - **Events Published**:
-  - `interview.scheduled` (interview_id, application_id, candidate_id, time, meet_url)
-  - `interview.feedback_submitted` (interview_id, interviewer_id, score, comment)
-  - `interview.completed` (interview_id, application_id)
+  - `interview.scheduled` (interview_id, application_id, start_time, meeting_link)
+  - `interview.feedback_submitted` (interview_id, recruiter_id, recommendation)
+  - `interview.completed` (interview_id, status)
 - **Events Consumed**:
-  - `application.stage_changed` (generates scheduling invitation when moving to interview stage)
+  - `application.stage_changed` (triggers scheduling alerts)
 - **Public APIs**:
-  - `POST /api/v1/interviews/schedule` (Book interview time slot)
-  - `GET /api/v1/interviews/availability` (Fetch recruiter available windows)
-  - `POST /api/v1/interviews/:interviewId/feedback` (Recruiter score submission)
+  - `POST /api/v1/interview` (Schedule interview)
+  - `GET /api/v1/interview` (List interviews)
+  - `GET /api/v1/interview/:id` (Fetch details)
+  - `POST /api/v1/interview/:id/reschedule` (Reschedule slot)
+  - `POST /api/v1/interview/:id/cancel` (Cancel interview)
+  - `POST /api/v1/interview/:id/book` (Candidate booking via slot)
+  - `POST /api/v1/interview/:id/scorecard` (Submit recruiter scorecard)
+  - `POST /api/v1/interview/availability` (Create recruiter slot)
+  - `GET /api/v1/interview/availability` (List recruiter slots)
 - **Dependencies**: Application Service, Notification Service.
 
 ---

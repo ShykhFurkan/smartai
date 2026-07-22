@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createJobClient } from "@/utils/supabase/job";
+import { createClient } from "@/utils/supabase/server";
 import { jobService } from "@/services/job-service";
 import { logger } from "@smarthire/logger";
 
@@ -46,25 +46,26 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST: Create a new job posting
+ * NOTE: Uses createClient() (default schema) for auth — custom-schema clients
+ * cannot resolve auth.getUser() correctly.
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createJobClient();
-
-    // Authenticate user session
+    // Auth must use the default-schema client; custom-schema clients bypass auth
+    const authClient = await createClient();
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await authClient.auth.getUser();
 
     if (authError || !user) {
+      logger.warn("API: Unauthorized job creation attempt");
       return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
     }
 
     const body = await request.json();
     logger.info(`API: Recruiter ${user.id} is creating a job posting`);
 
-    // Override or inject active recruiter/user if necessary, but keep it clean
     const jobRecord = await jobService.createJob(body);
     return NextResponse.json({ data: jobRecord }, { status: 201 });
   } catch (err: unknown) {

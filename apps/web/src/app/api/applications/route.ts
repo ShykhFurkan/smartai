@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     logger.info(`API: User ${user.id} applying for job posting`);
 
-    const appRecord = await applicationService.applyJob(body);
+    const appRecord = await applicationService.applyJob(body, user.id);
     return NextResponse.json({ data: appRecord }, { status: 201 });
   } catch (err: unknown) {
     logger.error("API error in application submission POST route", err);

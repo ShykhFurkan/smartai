@@ -130,6 +130,18 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     if (updateData.domain !== undefined) payload.domain = updateData.domain;
     if (updateData.logoUrl !== undefined) payload.logo_url = updateData.logoUrl;
 
+    // Onboarding Fields
+    if (updateData.industry !== undefined) payload.industry = updateData.industry;
+    if (updateData.companySize !== undefined) payload.company_size = updateData.companySize;
+    if (updateData.phone !== undefined) payload.phone = updateData.phone;
+    if (updateData.email !== undefined) payload.email = updateData.email;
+    if (updateData.timezone !== undefined) payload.timezone = updateData.timezone;
+    if (updateData.description !== undefined) payload.description = updateData.description;
+    if (updateData.bannerUrl !== undefined) payload.banner_url = updateData.bannerUrl;
+    if (updateData.country !== undefined) payload.country = updateData.country;
+    if (updateData.state !== undefined) payload.state = updateData.state;
+    if (updateData.city !== undefined) payload.city = updateData.city;
+
     // Branding colors mappings (e.g. saving inside a meta settings column or custom schema columns)
     // For standard supabase, we will map them directly to columns or placeholder configs
     if (updateData.primaryColor !== undefined) payload.primary_color = updateData.primaryColor;

@@ -8,7 +8,13 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:start": "npx supabase start",
+    "db:stop": "npx supabase stop",
+    "db:reset": "npx supabase db reset",
+    "db:migrate": "npx supabase db push",
+    "test:assessment": "pnpm --filter web test:assessment",
+    "test:interview": "pnpm --filter web test:interview"
   },
   "devDependencies": {
     "@eslint/js": "^9.16.0",

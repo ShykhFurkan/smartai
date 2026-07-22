@@ -11,6 +11,40 @@ export function useAuth() {
   const supabase = createClient();
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fetchUserWithDetails = async (sessionUser: any) => {
+      if (!sessionUser) return null;
+      try {
+        const { data: dbUser } = await supabase
+          .schema("identity")
+          .from("users")
+          .select("first_name, last_name, role")
+          .eq("id", sessionUser.id)
+          .maybeSingle();
+
+        const meta = sessionUser.user_metadata;
+        return {
+          id: sessionUser.id,
+          email: sessionUser.email || "",
+          firstName: dbUser?.first_name || meta?.first_name || "",
+          lastName: dbUser?.last_name || meta?.last_name || "",
+          role: (dbUser?.role || meta?.role as UserRole) || "candidate",
+          createdAt: sessionUser.created_at,
+        };
+      } catch (err) {
+        console.error("Error fetching db user details", err);
+        const meta = sessionUser.user_metadata;
+        return {
+          id: sessionUser.id,
+          email: sessionUser.email || "",
+          firstName: meta?.first_name || "",
+          lastName: meta?.last_name || "",
+          role: (meta?.role as UserRole) || "candidate",
+          createdAt: sessionUser.created_at,
+        };
+      }
+    };
+
     // 1. Initial session load
     const loadSession = async () => {
       try {
@@ -18,15 +52,8 @@ export function useAuth() {
           data: { session },
         } = await supabase.auth.getSession();
         if (session?.user) {
-          const meta = session.user.user_metadata;
-          setUser({
-            id: session.user.id,
-            email: session.user.email || "",
-            firstName: meta?.first_name || "",
-            lastName: meta?.last_name || "",
-            role: (meta?.role as UserRole) || "candidate",
-            createdAt: session.user.created_at,
-          });
+          const detailedUser = await fetchUserWithDetails(session.user);
+          setUser(detailedUser);
         } else {
           setUser(null);
         }
@@ -42,17 +69,10 @@ export function useAuth() {
     // 2. Subscribe to auth state changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        const meta = session.user.user_metadata;
-        setUser({
-          id: session.user.id,
-          email: session.user.email || "",
-          firstName: meta?.first_name || "",
-          lastName: meta?.last_name || "",
-          role: (meta?.role as UserRole) || "candidate",
-          createdAt: session.user.created_at,
-        });
+        const detailedUser = await fetchUserWithDetails(session.user);
+        setUser(detailedUser);
       } else {
         setUser(null);
       }

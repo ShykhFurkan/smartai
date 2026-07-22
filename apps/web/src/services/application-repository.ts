@@ -16,7 +16,7 @@ export interface StatusHistoryInput {
   fromStatus: string;
   toStatus: string;
   notes?: string | null;
-  changedBy: string;
+  changedBy?: string | null;
 }
 
 /**
@@ -30,7 +30,10 @@ export const applicationRepository = {
     logger.info("Repository: Listing applications with filters", filters);
     const supabase = await createAppClient();
 
-    let query = supabase.from("applications").select("*").is("deleted_at", null);
+    let query = supabase
+      .from("applications")
+      .select("id, job_id, candidate_id, resume_id, status, score, screening_score, mcq_score, mcq_total, mcq_passed, coding_score, coding_total, coding_passed, interview_avg_score, interview_recommendation, created_at, updated_at, deleted_at")
+      .is("deleted_at", null);
 
     if (filters.status) {
       query = query.eq("status", filters.status);
@@ -96,6 +99,7 @@ export const applicationRepository = {
         candidate_id: app.candidateId,
         resume_id: app.resumeId,
         status: "applied",
+        score: 2,
       })
       .select()
       .single();
@@ -128,6 +132,50 @@ export const applicationRepository = {
 
     if (error) {
       logger.error("Repository error: updateApplicationStatus failed", error);
+      throw error;
+    }
+    return data;
+  },
+
+  /**
+   * Update per-stage score columns on an application
+   */
+  updateStageScores: async (
+    applicationId: string,
+    scores: {
+      screening_score?: number;
+      mcq_score?: number;
+      mcq_total?: number;
+      mcq_passed?: boolean;
+      coding_score?: number;
+      coding_total?: number;
+      coding_passed?: boolean;
+      interview_avg_score?: number;
+      interview_recommendation?: string;
+    }
+  ) => {
+    logger.info(`Repository: Updating stage scores for application ${applicationId}`, scores);
+    const supabase = await createAppClient();
+    const now = new Date().toISOString();
+
+    // Build the update payload with only defined values
+    const updatePayload: Record<string, unknown> = { updated_at: now };
+    for (const [key, value] of Object.entries(scores)) {
+      if (value !== undefined && value !== null) {
+        updatePayload[key] = value;
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("applications")
+      .update(updatePayload)
+      .eq("id", applicationId)
+      .is("deleted_at", null)
+      .select()
+      .single();
+
+    if (error) {
+      logger.error("Repository error: updateStageScores failed", error);
       throw error;
     }
     return data;
